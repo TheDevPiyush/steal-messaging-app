@@ -13,7 +13,7 @@ export const sendVerificationOTP = async (verifyCodePayload: string, recipient: 
 
     try {
         const sendMail = await transport.sendMail({
-            from: "thedevpiyush@gmail.com",
+            from: process.env.FROM_EMAIL_ADDRESS,
             to: recipient,
             subject: subject,
             html: otpEmailTemplate(verifyCodePayload)
