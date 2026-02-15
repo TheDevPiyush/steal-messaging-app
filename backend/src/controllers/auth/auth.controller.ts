@@ -5,6 +5,7 @@ import { db } from "../../db";
 import { users } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import { sendVerificationOTP } from "../../mail/sendMail";
+import jwt from 'jsonwebtoken'
 
 export const sendVerificatonCode = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -81,7 +82,7 @@ export const verifyCode = async (req: Request, res: Response, next: NextFunction
             throw (throwError("Invalid OTP Code"));
         }
 
-        const removeUsedOTP = await db
+        await db
             .update(users)
             .set({
                 loginOTP: null,
@@ -91,10 +92,19 @@ export const verifyCode = async (req: Request, res: Response, next: NextFunction
 
         const { email: userEmail } = user
 
+        const token = jwt.sign(
+            {
+                email: userEmail
+            },
+            process.env.JSON_WEB_SECRET as string,
+            {
+                expiresIn: "7d"
+            });
+
         res.json({
             success: true,
             message: "OTP Verified",
-            data: { userEmail }
+            data: { token }
         });
     }
     catch (e: any) {
