@@ -1,5 +1,5 @@
 {
-  "id": "a7665d39-13e4-41fa-a1f8-6e248b0c24af",
+  "id": "f2b9a9dd-29fd-4e93-9238-aaefd460af1d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -21,8 +21,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "username": {
+          "name": "username",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -33,6 +33,24 @@
           "primaryKey": false,
           "notNull": false,
           "default": "now()"
+        },
+        "photo_url": {
+          "name": "photo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loginOTP": {
+          "name": "loginOTP",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loginOTPExpiresAt": {
+          "name": "loginOTPExpiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
