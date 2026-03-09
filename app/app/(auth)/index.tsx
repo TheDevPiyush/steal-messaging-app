@@ -1,4 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React,
+{
+    useState,
+    useRef, useEffect
+} from "react";
 import {
     StyleSheet,
     TextInput,
@@ -11,10 +15,17 @@ import {
     type NativeSyntheticEvent,
     type TextInputKeyPressEventData,
 } from "react-native";
-import { Text, View, SafeAreaView, useThemeColor } from "@/components/Themed";
+import {
+    Text,
+    View,
+    SafeAreaView,
+    useThemeColor
+} from "@/components/Themed";
 import Colors from "@/constants/Colors";
 import { sendCode, verifyCode } from "@/apis/auth";
-import { authStore } from "@/stores/authStore";
+import { getMe } from "@/apis/user";
+import { useAuthStore } from "@/stores/authStore";
+import { router } from "expo-router";
 
 const OTP_LENGTH = 6;
 
@@ -32,11 +43,12 @@ export default function Login() {
     const bg = useThemeColor({}, "background");
     const textColor = useThemeColor({}, "text");
     const tint = useThemeColor({}, "tint");
-    const subtextColor = useThemeColor({ light: "#666", dark: "#666" }, "text");
+    const subtextColor2 = useThemeColor({ light: "#666", dark: "#666" }, "text");
+    const subtextColor = useThemeColor({ light: "#666666c6", dark: "#666666c6" }, "text");
     const inputBg = useThemeColor({ light: "#fffbe7", dark: "#fffbe7" }, "background");
     const borderColor = useThemeColor({ light: "#e0e0e0", dark: "#e0e0e0" }, "background");
 
-    const { setEmail: authStoreEmail, setToken } = authStore();
+    const setAuth = useAuthStore((s) => s.setAuth);
 
     // Countdown timer for resend OTP
     useEffect(() => {
@@ -130,9 +142,15 @@ export default function Login() {
         Keyboard.dismiss();
         try {
             const data = await verifyCode(email, code);
-            console.log(data);
+            // console.log("-------",data.token)
+            const user = await getMe(data.token);
+            console.log(code)
+            console.log(data.token)
+            setAuth(data.token, user);
+
+            router.replace("/(home)");
         } catch (e: any) {
-            setError(e.message)
+            setError(e.message);
         } finally {
             setLoading(false);
         }
@@ -143,7 +161,7 @@ export default function Login() {
         setOtp(Array(OTP_LENGTH).fill(""));
         setCountdown(30);
         setError("");
-        // TODO: API call to resend OTP
+        handleSendOtp()
     };
 
     const handleBackToEmail = () => {
@@ -162,11 +180,11 @@ export default function Login() {
                     {/* Header */}
                     <View style={styles.header}>
                         <Text style={[styles.title, { color: textColor }]}>
-                            {step === "email" ? "Welcome back" : "Verify your email"}
+                            {step === "email" ? "Steal" : "Verify your email"}
                         </Text>
                         <Text style={[styles.subtitle, { color: subtextColor }]}>
                             {step === "email"
-                                ? "Sign in with your email to continue"
+                                ? "Let's get you set up real quick."
                                 : `We sent a code to ${email}`}
                         </Text>
                     </View>
@@ -175,8 +193,8 @@ export default function Login() {
                     {step === "email" && (
                         <View style={styles.form}>
                             <View style={styles.inputWrapper}>
-                                <Text style={[styles.label, { color: subtextColor }]}>
-                                    Your Email
+                                <Text style={[styles.label, { color: subtextColor2 }]}>
+                                    Email
                                 </Text>
                                 <TextInput
                                     style={[
@@ -202,6 +220,9 @@ export default function Login() {
                                     returnKeyType="next"
                                     editable={!loading}
                                 />
+                                <Text style={[styles.label2, { color: subtextColor }]}>
+                                    Only you can view your email - Steal never shows your email to anyone
+                                </Text>
                             </View>
 
                             {error ? (
@@ -331,7 +352,7 @@ const styles = StyleSheet.create({
         marginBottom: 40,
         backgroundColor: "transparent",
         alignContent: "center",
-        fontWeight: 400
+        fontFamily: "Inter"
     },
     logo: {
         fontSize: 32,
@@ -339,10 +360,9 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 28,
-        fontWeight: "700",
         letterSpacing: -0.5,
         marginBottom: 8,
-        textAlign: 'center'
+        textAlign: 'center',
     },
     subtitle: {
         fontSize: 15,
@@ -354,12 +374,17 @@ const styles = StyleSheet.create({
         marginTop: 15
     },
     inputWrapper: {
-        gap: 8,
+        gap: 5,
         backgroundColor: "transparent",
     },
     label: {
-        fontSize: 13,
-        fontWeight: "600",
+        fontSize: 14,
+        paddingHorizontal: 8
+
+    },
+    label2: {
+        fontSize: 11,
+        paddingHorizontal: 8
     },
     emailInput: {
         height: 52,
@@ -381,7 +406,6 @@ const styles = StyleSheet.create({
     },
     buttonText: {
         fontSize: 16,
-        fontWeight: "600",
         color: Colors.appColor.whiteColor
     },
     otpRow: {
@@ -397,7 +421,6 @@ const styles = StyleSheet.create({
         borderWidth: 1.5,
         textAlign: "center",
         fontSize: 22,
-        fontWeight: "600",
     },
     errorText: {
         color: "#ff4444",
@@ -412,6 +435,5 @@ const styles = StyleSheet.create({
     },
     linkText: {
         fontSize: 14,
-        fontWeight: "500",
     },
 });

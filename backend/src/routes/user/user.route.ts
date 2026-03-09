@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { sendVerificatonCode, verifyCode } from "../../controllers/auth/auth.controller";
+import { verifyToken } from "../../middlewares/verifyToken";
+import { getMe } from "../../controllers/user.controller";
 
-export const authRouter = Router()
+export const userRouer = Router()
 
-authRouter.post('/send-code', sendVerificatonCode);
-authRouter.post('/verify-code', verifyCode)
+userRouer.get('/@me', verifyToken, getMe);

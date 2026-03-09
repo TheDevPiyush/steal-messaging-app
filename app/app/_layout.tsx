@@ -1,15 +1,12 @@
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
-
 import { useColorScheme } from '@/components/useColorScheme';
-import { SafeAreaView } from "@/components/Themed";
-import { useThemeColor } from '@/components/Themed';
-import Colors from '@/constants/Colors';
+import { useAuthStore } from '@/stores/authStore';
 
 export {
   ErrorBoundary,
@@ -21,20 +18,28 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [loaded, error] = useFonts({
     Inter: require('../assets/fonts/inter.ttf'),
+    InterItalic: require('../assets/fonts/inter_italic.ttf'),
     ...FontAwesome.font,
   });
+
+  const hydrate = useAuthStore((s) => s.hydrate);
+  const isReady = useAuthStore((s) => s.isReady);
 
   useEffect(() => {
     if (error) throw error;
   }, [error]);
 
   useEffect(() => {
-    if (loaded) {
+    hydrate();
+  }, []);
+
+  useEffect(() => {
+    if (loaded && isReady) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, isReady]);
 
-  if (!loaded) {
+  if (!loaded || !isReady) {
     return null;
   }
 
@@ -43,6 +48,18 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const router = useRouter();
+  const segments = useSegments();
+  const token = useAuthStore((s) => s.token);
+
+  useEffect(() => {
+    const inAuth = segments[0] === "(auth)";
+    if (!token && !inAuth) {
+      router.replace("/(auth)");
+    } else if (token && inAuth) {
+      router.replace("/(home)");
+    }
+  }, [token, segments]);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>

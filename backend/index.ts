@@ -3,6 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import dotenv from 'dotenv'
 import { errorHandler } from './src/middlewares/errorMiddleware';
 import { authRouter } from './src/routes/auth/auth.route';
+import { userRouer } from './src/routes/user/user.route';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ app.get('/', (_, res: Response) => {
 });
 
 app.use('/auth', authRouter);
+app.use('/user', userRouer);
 
 app.use(errorHandler);
 app.listen(PORT as number, '0.0.0.0', () => {
